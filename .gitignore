@@ -1,0 +1,10 @@
+.env
+venv/
+myenv/
+data/
+.vscode/
+src/__pycache__/
+__pycache__/
+.DS_Store
+bm25_model.json
+src/my_projects

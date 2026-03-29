@@ -1,0 +1,14 @@
+streamlit
+langchain
+langchain-classic 
+langchain-google-genai
+langchain-deepseek
+langchain-cohere
+langchain-pinecone
+pinecone
+faiss-cpu
+PyMuPDF
+python-docx
+docx2txt
+python-dotenv
+pinecone-text
