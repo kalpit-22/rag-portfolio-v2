@@ -48,7 +48,7 @@ def ask_portfolio(query: str, chat_history: list, temp_retriever=None, return_so
     compressor = CohereRerank(
         cohere_api_key=os.getenv("COHERE_API_KEY"), 
         model="rerank-english-v3.0",
-        top_n=4 # Only let the absolute best 4 chunks reach DeepSeek
+        top_n=6 # Only let the absolute best 4 chunks reach DeepSeek
     )
     
     reranker_retriever = ContextualCompressionRetriever(
@@ -60,7 +60,7 @@ def ask_portfolio(query: str, chat_history: list, temp_retriever=None, return_so
     system_prompt = (
         "You are a helpful assistant. Use the provided context to answer the user's questions. "
         "The context may include project documentation, resumes, or financial terms and conditions. "
-        "Answer based ONLY on the provided context. If the answer isn't there, say you don't know."
+        "Answer based ONLY on the provided context, you can infer the content and make small assumptions if needed. If the answer isn't there, say you don't know."
         "\n\nContext:\n{context}"
     )
 

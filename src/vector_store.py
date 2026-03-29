@@ -43,7 +43,7 @@ def get_permanent_retriever():
         embeddings=embeddings,
         sparse_encoder=cloud_sparse_encoder,
         index=index,
-        top_k=10, 
+        top_k=15, 
         alpha=0.3, # This still works perfectly! It scales the dense/sparse weights.
         namespace="projects",
         text_key="text" 
@@ -54,4 +54,4 @@ def create_temporary_retriever(document_chunks):
     embeddings = get_embeddings()
     # FAISS is fast enough that we don't need Hybrid for small session files
     vectorstore = FAISS.from_documents(document_chunks, embeddings)
-    return vectorstore.as_retriever(search_kwargs={"k": 4})
+    return vectorstore.as_retriever(search_kwargs={"k": 5})
