@@ -27,12 +27,3 @@ Unlike standard RAG pipelines that simply pull from a single database, this appl
 * **JSON-Free Hybrid Search:** Utilizes Pinecone's server-side inference for sparse vector generation, completely eliminating the need for local vocabulary fitting or disk-bound BM25 models.
 * **Zero-Retention Uploads:** User-uploaded JDs are processed entirely in RAM using FAISS and instantly destroyed upon session termination.
 * **Advanced Chunking:** Implements overlapping `RecursiveCharacterTextSplitter` to maintain semantic boundaries across dense technical documentation.
-
-## 🚀 Running Locally
-
-To run this agent on your own machine:
-
-**1. Clone the repository:**
-```bash
-git clone [https://github.com/kalpit-22/rag-portfolio-v2.git](https://github.com/kalpit-22/rag-portfolio-v2.git)
-cd rag-portfolio-v2
