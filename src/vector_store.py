@@ -3,7 +3,6 @@ from pinecone import Pinecone
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_community.retrievers import PineconeHybridSearchRetriever
-from pinecone_text.sparse import BM25Encoder
 
 def get_embeddings():
     """Gemini 2.0 Multimodal Embeddings"""
@@ -12,26 +11,40 @@ def get_embeddings():
         google_api_key=os.getenv("GOOGLE_API_KEY")
     )
 
+class CloudSparseEncoder:
+    """SOTA Wrapper: Makes Pinecone Inference API act like LangChain's expected BM25 object."""
+    def __init__(self, pc_client):
+        self.pc = pc_client
+
+    def encode_queries(self, text: str):
+        # We use input_type="query" here so the AI knows we are asking a question
+        res = self.pc.inference.embed(
+            model="pinecone-sparse-english-v0",
+            inputs=[text],
+            parameters={"input_type": "query"} 
+        )
+        
+        # Return the exact dictionary format LangChain's Hybrid Retriever expects
+        return {
+            "indices": res[0].sparse_indices,
+            "values": res[0].sparse_values
+        }
+
 def get_permanent_retriever():
     """Cloud Hybrid Search (Dense + Sparse) Optimized for Reranking"""
     embeddings = get_embeddings()
     pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
     index = pc.Index("rag-portfolio")
     
-    # Load vocabulary from bm25_model.json
-    bm25 = BM25Encoder().load("bm25_model.json")
+    # SOTA 2026: We replaced BM25Encoder().load() with our new Cloud Encoder
+    cloud_sparse_encoder = CloudSparseEncoder(pc)
     
     return PineconeHybridSearchRetriever(
         embeddings=embeddings,
-        sparse_encoder=bm25,
+        sparse_encoder=cloud_sparse_encoder,
         index=index,
-        # SOTA Tweak 1: Increase top_k to 10. 
-        # We grab more chunks so the Cohere Reranker has more to choose from.
         top_k=10, 
-        # SOTA Tweak 2: Alpha 0.3. 
-        # 0.0 is pure keyword, 1.0 is pure semantic. 
-        # 0.3 leans harder on keywords (BM25) to find terms like "HSBC" or "Cap".
-        alpha=0.3,
+        alpha=0.3, # This still works perfectly! It scales the dense/sparse weights.
         namespace="projects",
         text_key="text" 
     )

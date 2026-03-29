@@ -8,3 +8,5 @@ __pycache__/
 .DS_Store
 bm25_model.json
 src/my_projects
+src/temp_data
+.pdf

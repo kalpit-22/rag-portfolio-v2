@@ -5,10 +5,11 @@ langchain-google-genai
 langchain-deepseek
 langchain-cohere
 langchain-pinecone
+langchain-text-splitters
+langchain-community
 pinecone
 faiss-cpu
 PyMuPDF
 python-docx
 docx2txt
 python-dotenv
-pinecone-text
