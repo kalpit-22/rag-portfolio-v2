@@ -44,7 +44,7 @@ def get_permanent_retriever():
         sparse_encoder=cloud_sparse_encoder,
         index=index,
         top_k=15, 
-        alpha=0.3, # This still works perfectly! It scales the dense/sparse weights.
+        alpha=0.3, 
         namespace="projects",
         text_key="text" 
     )

@@ -8,6 +8,7 @@ from langchain_classic.chains import create_retrieval_chain
 from langchain_classic.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.messages import HumanMessage, AIMessage
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from src.vector_store import get_permanent_retriever
 
@@ -25,10 +26,10 @@ def ask_portfolio(query: str, chat_history: list, temp_retriever=None, return_so
     """The main brain of the SOTA RAG. Merges retrievers, reranks, and answers."""
     
     # 1. Initialize the DeepSeek Brain
-    llm = ChatDeepSeek(
-        model="deepseek-chat", 
-        api_key=os.getenv("DEEPSEEK_API_KEY"),
-        temperature=0.2 # Slightly creative but highly factual
+    llm = ChatGoogleGenerativeAI(
+        model="gemini-2.5-flash",
+        google_api_key=os.getenv("GOOGLE_API_KEY"),
+        temperature=0.2
     )
 
     # 2. Build the Hybrid Search Engine

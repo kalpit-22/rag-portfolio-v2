@@ -58,12 +58,12 @@ if "temp_retriever" not in st.session_state:
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/2103/2103285.png", width=50) # Tiny decorative icon
     st.header("Comparative RAG Engine")
-    st.caption("Upload a Job Description to see how my skills match your exact requirements. Files are processed in RAM and destroyed upon exit.")
+    st.caption("Upload a Description to see how my skills match requirements. Files are processed in RAM and destroyed upon exit.")
     
     st.divider()
     
     uploaded_files = st.file_uploader(
-        "📄 Drop JD or PDF here", 
+        "📄 Drop files here", 
         type=["pdf", "docx", "txt"], 
         accept_multiple_files=True
     )
@@ -103,7 +103,7 @@ if len(st.session_state.messages) == 0:
     I've been trained on his resume, GitHub, and technical documentation. Feel free to ask me anything!
     
     **Try asking:**
-    * 💡 *"How did you save $300K+ at CNH Industrial?"*
+    * 💡 *"How did you save $300K+ in the Organization?"*
     * ⚙️ *"What is your experience with Agentic AI and LLMs?"*
     * 📊 *"Explain the architecture of your DevPilot project."*
     """)
@@ -133,4 +133,4 @@ if prompt := st.chat_input("Ask about my projects, skills, or upload a JD to com
                 st.session_state.messages.append({"role": "assistant", "content": response})
                 
             except Exception as e:
-                st.error(f"Agent Offline: {e}\n\nCheck API keys.")
+                st.error(f"Agent Offline: {e}\n\nCheck API keys, Network connection and try again.")
