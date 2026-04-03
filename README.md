@@ -1,29 +1,51 @@
-# 🚀 SOTA Portfolio RAG: Cloud-Native Comparative AI Agent
+# 🚀 Comparative RAG Portfolio Agent
 
-An advanced, stateless Retrieval-Augmented Generation (RAG) system built to act as an interactive engineering portfolio. This application leverages a multi-stage retrieval architecture, combining serverless hybrid search, in-memory vector stores, and cross-encoder reranking to answer questions with extreme precision.
+An advanced, cloud-native Retrieval-Augmented Generation (RAG) system designed to act as an interactive professional portfolio. 
 
-## 🧠 The "Comparative RAG" Architecture
+Instead of a standard Q&A bot, this agent utilizes a **Split-Brain Memory Architecture** (Pinecone + FAISS) and a **LangChain Ensemble Retriever**. It allows recruiters to upload a Job Description (JD) and dynamically cross-references their exact requirements against my historical projects (like DevPilot), resume, and technical documentation.
 
-Unlike standard RAG pipelines that simply pull from a single database, this application features a dual-memory system designed specifically for recruiters and hiring managers. It evaluates permanent portfolio data against temporary, user-uploaded Job Descriptions (JDs) in real-time.
+---
 
-1. **Long-Term Memory (Pinecone):** Stores my permanent project documentation, technical skills, and experience using **Cloud-Native Hybrid Search** (Dense + Learned Sparse Embeddings).
-2. **Short-Term Memory (FAISS):** An ephemeral, in-memory vector store that instantly ingests recruiter-uploaded PDFs/JDs via `tempfile` and lives only for the active session.
-3. **The Ensemble Engine:** Uses LangChain's `EnsembleRetriever` to query both databases simultaneously, assigning equal weight to my historical experience and the recruiter's active requirements.
-4. **The SOTA Filter (Cohere):** Passes the combined retrieved chunks through `rerank-english-v3.0` to filter out noise, ensuring only the top 4 highest-correlated chunks reach the LLM context window.
-5. **The Brain (DeepSeek-V4):** Synthesizes the reranked context to generate factual, hallucination-free comparative responses.
+## 🧠 Architecture Overview
 
-## 🛠️ Tech Stack & 2026 Implementations
+The system is built on a highly optimized, four-pillar RAG pipeline:
 
-* **LLM:** DeepSeek-Chat (Highly factual, strict temperature control).
-* **Embeddings:** Google Gemini 2.0 (`gemini-embedding-2-preview`).
-* **Vector Database:** Pinecone Serverless.
-* **Sparse Encoding:** Pinecone Inference API (`pinecone-sparse-english-v0`). *Replaced legacy local BM25 JSON models for a fully stateless, cloud-deployable footprint.*
-* **Reranking:** Cohere Contextual Compression.
-* **Framework:** LangChain (Core, Community, Classic).
-* **Frontend:** Streamlit Community Cloud.
+1. **Dual-Memory Retrieval (Split-Brain):**
+   * **Long-Term Memory:** Pinecone Serverless acts as the permanent knowledge base containing my professional history (CNH Industrial experience, deployed projects, etc.).
+   * **Short-Term Memory:** An ephemeral FAISS vector store sits in RAM to process user-uploaded files (JDs), deleting them securely the moment the session ends.
+2. **Cloud-Native Hybrid Search:**
+   * **Dense Vectors (Gemini 2.0 Multimodal):** Captures semantic meaning and conceptual alignment.
+   * **Sparse Vectors (Pinecone Inference):** Captures exact keyword dominance (BM25 equivalent) via a custom `CloudSparseEncoder` wrapper, bypassing local dependencies.
+3. **Contextual Compression (SOTA Filtering):**
+   * A **Cohere Cross-Encoder** intercepts the retrieved chunks from both databases, reads them simultaneously against the user's prompt, and aggressively filters out noise, passing only the top 6 most mathematically relevant chunks to the generator.
+4. **The Generative Brain:**
+   * Powered by **Gemini 2.5 Flash**, the final generation step is locked behind strict system prompts designed to prevent hallucination, enforce professional tone, and block the leakage of Personally Identifiable Information (PII).
 
-## ⚡ Key Features
+---
 
-* **JSON-Free Hybrid Search:** Utilizes Pinecone's server-side inference for sparse vector generation, completely eliminating the need for local vocabulary fitting or disk-bound BM25 models.
-* **Zero-Retention Uploads:** User-uploaded JDs are processed entirely in RAM using FAISS and instantly destroyed upon session termination.
-* **Advanced Chunking:** Implements overlapping `RecursiveCharacterTextSplitter` to maintain semantic boundaries across dense technical documentation.
+## 🛠️ Tech Stack
+
+| Component | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Frontend UI** | Streamlit | Cloud-hosted chat interface and session state management |
+| **Orchestration** | LangChain | Ensemble logic, routing, and chain construction |
+| **LLM (Brain)** | Gemini 2.5 Flash | Blazing fast, highly factual response synthesis |
+| **Embeddings** | Gemini 2.0 Preview | 768-dimensional semantic text mapping |
+| **Permanent DB** | Pinecone Serverless | Hybrid (Dense + Sparse) cloud vector storage |
+| **Ephemeral DB** | FAISS (CPU) | High-speed, in-memory RAM vector storage |
+| **Reranker** | Cohere v3.0 | Cross-encoder contextual compression |
+
+---
+
+## 📂 Project Structure
+
+```text
+rag-portfolio-v2/
+├── app.py                     # Streamlit frontend & memory management
+├── ingest.py                  # ETL pipeline (Chunking, Hybrid API calls, Upsert)
+├── requirements.txt           # Production dependencies
+├── src/
+│   ├── agent.py               # Ensemble logic, Cohere filtering, & Gemini chains
+│   ├── vector_store.py        # Database routing & custom CloudSparseEncoder
+│   ├── document_loaders.py    # Factory line for PDF, DOCX, and TXT chunking
+│   └── my_projects/           # Source Markdown/PDFs for Pinecone ingestion
