@@ -115,7 +115,7 @@ for msg in st.session_state.messages:
     st.chat_message(msg["role"], avatar=avatar).write(msg["content"])
 
 # User Input
-if prompt := st.chat_input("Ask about my projects, skills, or upload a JD to compare..."):
+if prompt := st.chat_input("Ask about my projects, skills, or upload file to compare..."):
     
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user", avatar="👤").write(prompt)
