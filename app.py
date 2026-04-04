@@ -46,7 +46,7 @@ st.markdown("""
 
 # 3. Header Section
 st.markdown('<h1 class="title-gradient">🚀 Pradhyumn\'s AI Agent</h1>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Powered by DeepSeek-V4, Gemini 2, and Pinecone Serverless</p>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Powered by Gemini 2.5 Flash, Gemini 2 Embeddings, and Pinecone Serverless</p>', unsafe_allow_html=True)
 
 # Initialize session state
 if "messages" not in st.session_state:
