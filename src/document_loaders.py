@@ -10,8 +10,8 @@ def load_docx(file_path: str):
     text = "\n".join([para.text for para in doc.paragraphs])
     return [Document(page_content=text, metadata={"source": file_path})]
 
-def load_and_split_document(file_path: str, chunk_size: int = 1000, chunk_overlap: int = 200):
-    """Loads a document (PDF, TXT, DOCX) and splits it into chunks."""
+def load_and_split_document(file_path: str, chunk_size: int = 1000, chunk_overlap: int = 150):
+    """Loads a document (PDF, TXT, DOCX, MD) and splits it into chunks."""
     ext = os.path.splitext(file_path)[-1].lower()
     
     if ext == '.pdf':
@@ -19,7 +19,7 @@ def load_and_split_document(file_path: str, chunk_size: int = 1000, chunk_overla
         docs = loader.load()
     elif ext == '.docx':
         docs = load_docx(file_path)
-    elif ext == '.txt':
+    elif ext in ['.txt', '.md']:
         loader = TextLoader(file_path, encoding='utf-8')
         docs = loader.load()
     else:
