@@ -1,4 +1,4 @@
-# 🚀 Comparative RAG Portfolio Agent
+# Comparative RAG Portfolio Agent
 
 An advanced, cloud-native Retrieval-Augmented Generation (RAG) system designed to act as an interactive professional portfolio. 
 
@@ -6,7 +6,7 @@ Instead of a standard Q&A bot, this agent utilizes a **Split-Brain Memory Archit
 
 ---
 
-## 🧠 Architecture Overview
+##  Architecture Overview
 
 The system is built on a highly optimized, four-pillar RAG pipeline:
 
@@ -23,7 +23,7 @@ The system is built on a highly optimized, four-pillar RAG pipeline:
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Component | Technology | Purpose |
 | :--- | :--- | :--- |
@@ -37,7 +37,7 @@ The system is built on a highly optimized, four-pillar RAG pipeline:
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
 
 ```text
 rag-portfolio-v2/
