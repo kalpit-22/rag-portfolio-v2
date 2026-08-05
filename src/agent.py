@@ -49,9 +49,9 @@ def ask_portfolio(query: str, chat_history: list, temp_retriever=None, return_so
     compressor = CohereRerank(
         cohere_api_key=os.getenv("COHERE_API_KEY"), 
         model="rerank-english-v3.0",
-        top_n=6 # Only let the absolute best 4 chunks reach DeepSeek
+        top_n=6 
     )
-    
+
     reranker_retriever = ContextualCompressionRetriever(
         base_compressor=compressor,
         base_retriever=base_retriever
