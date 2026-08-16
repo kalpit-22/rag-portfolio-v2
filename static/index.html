@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pradhyumn | AI Engineer Portfolio</title>
+    <meta name="description" content="Pradhyumn's AI Agent powered by Gemini 2.5 Flash, Pinecone, and Cohere.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="https://cdn-icons-png.flaticon.com/512/2103/2103285.png" alt="AI Icon" class="sidebar-icon">
+                <h2>Comparative RAG Engine</h2>
+                <p>Upload a Description to see how my skills match requirements. Files are processed in RAM and destroyed upon exit.</p>
+            </div>
+            
+            <div class="sidebar-divider"></div>
+            
+            <div class="upload-section">
+                <div class="upload-area" id="drop-zone">
+                    <span class="upload-icon">📄</span>
+                    <p>Drop files here or click to upload</p>
+                    <input type="file" id="file-input" multiple accept=".pdf,.docx,.txt" hidden>
+                </div>
+                <button id="upload-btn" class="primary-btn">Analyze Document 🔍</button>
+                <div id="upload-status" class="status-message hidden"></div>
+            </div>
+            
+            <div class="sidebar-divider"></div>
+            
+            <div class="architecture-info">
+                <h3>Architecture:</h3>
+                <ul>
+                    <li>🔹 LangChain Ensemble</li>
+                    <li>🔹 Cohere Reranking</li>
+                    <li>🔹 Pinecone Inference API</li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="main-header">
+                <h1 class="title-gradient">🚀 Pradhyumn's AI Agent</h1>
+                <p class="subtitle">Powered by Gemini 2.5 Flash, Gemini 2 Embeddings, Pinecone Serverless and Cohere Reranking</p>
+            </header>
+
+            <div class="chat-container" id="chat-container">
+                <!-- Welcome Screen initially visible -->
+                <div class="welcome-screen" id="welcome-screen">
+                    <h3>👋 Welcome! I am Pradhyumn's Virtual Assistant.</h3>
+                    <p>I've been trained on his resume, GitHub, and technical documentation. Feel free to ask me anything!</p>
+                    
+                    <div class="suggestions">
+                        <p><strong>Try asking:</strong></p>
+                        <button class="suggestion-btn">💡 "How did you save $300K+ in the Organization?"</button>
+                        <button class="suggestion-btn">⚙️ "What is your experience with Agentic AI and LLMs?"</button>
+                        <button class="suggestion-btn">📊 "Explain the architecture of your DevPilot project."</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <input type="text" id="chat-input" placeholder="Ask about my projects, skills, or upload file to compare..." autocomplete="off">
+                    <button id="send-btn" class="send-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+</html>
