@@ -1,6 +1,9 @@
 fastapi
 uvicorn
 python-multipart
+slowapi
+pytest
+httpx
 langchain
 langchain-classic 
 langchain-google-genai

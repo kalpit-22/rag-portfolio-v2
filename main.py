@@ -3,12 +3,16 @@ import tempfile
 import uuid
 from typing import List, Optional
 
-from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Header
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Header, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
+
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from src.document_loaders import load_and_split_document
 from src.vector_store import create_temporary_retriever
@@ -17,6 +21,11 @@ from src.agent import ask_portfolio
 load_dotenv()
 
 app = FastAPI(title="Pradhyumn's AI Portfolio API")
+
+# Setup Rate Limiting
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Allow CORS for development
 app.add_middleware(
@@ -43,16 +52,17 @@ class ChatRequest(BaseModel):
     session_id: str
 
 @app.post("/api/chat")
-async def chat_endpoint(request: ChatRequest):
+@limiter.limit("20/minute")
+async def chat_endpoint(request: Request, body: ChatRequest):
     try:
         # Convert pydantic models to dict format expected by ask_portfolio
-        history_dicts = [{"role": msg.role, "content": msg.content} for msg in request.chat_history]
+        history_dicts = [{"role": msg.role, "content": msg.content} for msg in body.chat_history]
         
         # Get temporary retriever if the user uploaded documents in this session
-        temp_retriever = session_retrievers.get(request.session_id)
+        temp_retriever = session_retrievers.get(body.session_id)
         
         response = ask_portfolio(
-            query=request.query,
+            query=body.query,
             chat_history=history_dicts,
             temp_retriever=temp_retriever
         )
@@ -61,7 +71,8 @@ async def chat_endpoint(request: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/upload")
-async def upload_document(session_id: str = Form(...), files: List[UploadFile] = File(...)):
+@limiter.limit("5/minute")
+async def upload_document(request: Request, session_id: str = Form(...), files: List[UploadFile] = File(...)):
     try:
         all_chunks = []
         with tempfile.TemporaryDirectory() as temp_dir:
