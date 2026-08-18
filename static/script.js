@@ -221,3 +221,11 @@ function showStatus(message, type) {
     uploadStatus.className = `status-message ${type}`;
     uploadStatus.classList.remove('hidden');
 }
+
+// --- SESSION CLEANUP ---
+window.addEventListener('beforeunload', () => {
+    // Attempt to delete the server-side Pinecone namespace securely upon exit
+    const data = JSON.stringify({ session_id: sessionId });
+    const blob = new Blob([data], { type: 'application/json' });
+    navigator.sendBeacon('/api/end-session', blob);
+});

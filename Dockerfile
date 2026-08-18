@@ -1,25 +1,19 @@
-# Use an official Python lightweight image and force linux/amd64 architecture for EC2 compatibility
-FROM --platform=linux/amd64 python:3.12-slim
-
-# Set working directory
-WORKDIR /app
+# Use the official AWS Lambda Python image
+FROM public.ecr.aws/lambda/python:3.12
 
 # Install system dependencies (required for some ML libraries like PyMuPDF or FAISS)
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+# Note: AWS Lambda base uses Amazon Linux (yum)
+RUN yum update -y && yum install -y \
+    gcc \
+    gcc-c++ \
+    && yum clean all
 
-# Copy requirements first to leverage Docker cache
-COPY requirements.txt .
-
-# Install dependencies
+# Copy requirements and install
+COPY requirements.txt ${LAMBDA_TASK_ROOT}
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application
-COPY . .
+# Copy your app code
+COPY . ${LAMBDA_TASK_ROOT}
 
-# Expose the port FastAPI runs on
-EXPOSE 8000
-
-# Command to run the application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Set the CMD to your handler (mangum wrapper in main.py)
+CMD ["main.handler"]

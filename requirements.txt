@@ -20,3 +20,4 @@ python-docx
 docx2txt
 python-dotenv
 pinecone_text
+mangum

@@ -3,6 +3,7 @@ from pinecone import Pinecone
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_community.retrievers import PineconeHybridSearchRetriever
+from langchain_pinecone import PineconeVectorStore
 
 def get_embeddings():
     """Gemini 2.0 Multimodal Embeddings"""
@@ -49,9 +50,36 @@ def get_permanent_retriever():
         text_key="text" 
     )
 
-def create_temporary_retriever(document_chunks):
-    """In-memory search for recruiter-uploaded files"""
+def upload_temporary_documents(document_chunks, session_id: str):
+    """Stateless upload to Pinecone for recruiter-uploaded files"""
     embeddings = get_embeddings()
-    # FAISS is fast enough that we don't need Hybrid for small session files
-    vectorstore = FAISS.from_documents(document_chunks, embeddings)
+    index_name = "rag-portfolio"
+    namespace = f"session_{session_id}"
+    PineconeVectorStore.from_documents(
+        document_chunks, 
+        embeddings, 
+        index_name=index_name, 
+        namespace=namespace
+    )
+
+def get_temporary_retriever(session_id: str):
+    """Stateless retrieval from Pinecone namespace"""
+    embeddings = get_embeddings()
+    index_name = "rag-portfolio"
+    namespace = f"session_{session_id}"
+    vectorstore = PineconeVectorStore(
+        index_name=index_name, 
+        embedding=embeddings, 
+        namespace=namespace
+    )
     return vectorstore.as_retriever(search_kwargs={"k": 5})
+
+def delete_temporary_documents(session_id: str):
+    """Delete the Pinecone namespace when session ends."""
+    pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
+    index = pc.Index("rag-portfolio")
+    namespace = f"session_{session_id}"
+    try:
+        index.delete(delete_all=True, namespace=namespace)
+    except Exception as e:
+        print(f"Error deleting namespace {namespace}: {e}")
