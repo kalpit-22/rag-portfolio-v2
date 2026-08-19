@@ -11,3 +11,4 @@ src/my_projects
 src/temp_data
 .pdf
 env
+.agents/
