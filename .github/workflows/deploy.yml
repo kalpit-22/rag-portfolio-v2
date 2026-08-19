@@ -40,9 +40,10 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: portfolio-rag
           IMAGE_TAG: latest
-          LAMBDA_FUNCTION_NAME: portfolio-agent
+          LAMBDA_FUNCTION_NAME: Portfolio_deployement
         run: |
           # Tell Lambda to download the new image and switch over to it
           aws lambda update-function-code \
             --function-name $LAMBDA_FUNCTION_NAME \
             --image-uri $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
