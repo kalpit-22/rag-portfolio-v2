@@ -1,110 +1,134 @@
-# Comparative RAG Portfolio Agent
+# Adaptive RAG Engine
 
-An advanced, cloud-native Retrieval-Augmented Generation (RAG) system designed to act as an interactive professional portfolio. 
+An interactive AI agent built with FastAPI, LangChain, and Pinecone. 
 
-Instead of a standard Q&A bot, this agent utilizes a **Split-Brain Memory Architecture** (Pinecone Permanent + Pinecone Ephemeral) and a **LangChain Ensemble Retriever**. It allows recruiters to upload a Job Description (JD) and dynamically cross-references their exact requirements against my historical projects, resume, and technical documentation.
+This agent combines a permanent knowledge base of my background with dynamic, session-based document ingestion. Visitors can ask questions about my experience and projects, or upload custom documents (PDF, DOCX, TXT) that are chunked, embedded, and queried in real time alongside my portfolio data.
 
 ---
 
-## 🏗️ Architecture Overview
+## How It Works
 
-The system is built on a highly optimized, four-pillar RAG pipeline deployed via a modern FastAPI backend:
+Here is the high-level architecture of how requests flow from the frontend to the LLM:
 
 ```mermaid
 graph TD
-    User([User]) -->|Chat / Upload Files| Frontend[Vanilla JS/CSS UI]
-    Frontend -->|REST API| FastAPI[FastAPI Backend]
+    User([User]) -->|Chat / File Upload| Frontend[Web UI]
+    Frontend -->|HTTP| LambdaURL[AWS Lambda Function URL]
+    LambdaURL -->|Event| Mangum[Mangum ASGI Adapter]
+    Mangum -->|Request| FastAPI[FastAPI]
     
-    FastAPI -->|Check Rate Limit| SlowAPI[SlowAPI Rate Limiter]
-    SlowAPI -->|Query| Orchestrator[LangChain Ensemble]
+    FastAPI -->|Rate Limit| SlowAPI[SlowAPI]
+    SlowAPI -->|Process Question| Orchestrator[LangChain Pipeline]
     
-    Orchestrator -->|Search Permanent DB| PineconePerm[(Pinecone Serverless)]
-    Orchestrator -->|Search Ephemeral DB| PineconeEph[(Pinecone Serverless - Namespaces)]
+    Orchestrator -->|Hybrid Search| PineconePerm[(Pinecone - Projects)]
+    Orchestrator -->|Session Search| PineconeEph[(Pinecone - Temporary Uploads)]
     
-    PineconePerm -->|Dense + Sparse Vectors| Reranker[Cohere Reranker]
-    PineconeEph -->|Dense Vectors| Reranker
+    PineconePerm -->|Retrieve Chunks| Reranker[Cohere Rerank v3]
+    PineconeEph -->|Retrieve Chunks| Reranker
     
     Reranker -->|Top 6 Chunks| LLM[Gemini 2.5 Flash]
-    LLM -->|Generate Answer| Orchestrator
-    Orchestrator -->|Stream Response| Frontend
+    LLM -->|Answer| Orchestrator
+    Orchestrator -->|JSON Response| Frontend
     
-    %% Tracing
-    Orchestrator -.->|Log telemetry| LangSmith[(LangSmith Observability)]
+    Orchestrator -.->|Traces| LangSmith[(LangSmith)]
 ```
 
-### 1. Dual-Memory Retrieval (Split-Brain):
-* **Long-Term Memory:** Pinecone Serverless acts as the permanent knowledge base containing my professional history (experience, deployed projects, etc.).
-* **Short-Term Memory:** User-uploaded files (JDs) are temporarily isolated into stateless Pinecone Namespaces, which are securely deleted the moment the user closes the window.
+### Key Technical Details
 
-### 2. Cloud-Native Hybrid Search:
-* **Dense Vectors (Gemini 2.0 Multimodal):** Captures semantic meaning and conceptual alignment.
-* **Sparse Vectors (Pinecone Inference):** Captures exact keyword dominance (BM25 equivalent) via a custom `CloudSparseEncoder` wrapper, bypassing local dependencies.
+1. **Dual-Memory Search:**
+   - **Permanent Memory:** Pinecone index containing vectors of my resume, project writeups, and documentation.
+   - **Ephemeral Session Memory:** When a user uploads a document, its text is chunked, converted into vector embeddings, and indexed into a temporary Pinecone namespace tied to their session ID. This allows real-time querying across both the permanent portfolio and the newly uploaded document context.
 
-### 3. Contextual Compression (SOTA Filtering):
-* A **Cohere Cross-Encoder** intercepts the retrieved chunks from both databases, reads them simultaneously against the user's prompt, and aggressively filters out noise, passing only the top 6 most mathematically relevant chunks to the generator.
+2. **Hybrid Search (Dense + Sparse):**
+   - Combines semantic search (Gemini 2.0 Embeddings) with keyword matching (Pinecone Sparse Encoder) so it can handle both conceptual questions and specific keyword queries.
 
-### 4. The Generative Brain:
-* Powered by **Gemini 2.5 Flash**, the final generation step is locked behind strict system prompts designed to prevent hallucination, enforce professional tone, and block the leakage of Personally Identifiable Information (PII).
+3. **Reranking & Filtering:**
+   - Results from both vector sources pass through Cohere Rerank v3 to score and pick the top 6 most relevant text chunks before building the prompt.
 
----
+4. **Response Generation:**
+   - Uses Gemini 2.5 Flash with system instructions to stick strictly to the retrieved context and prevent disclosing private contact info.
 
-## 🛠️ Tech Stack
-
-| Component | Technology | Purpose |
-| :--- | :--- | :--- |
-| **Frontend UI** | Vanilla HTML/CSS/JS | Glassmorphic, zero-dependency blazing fast UI |
-| **Backend API** | FastAPI | Highly concurrent asynchronous REST server |
-| **Rate Limiting** | SlowAPI | Protects endpoints from abuse/spam |
-| **Orchestration** | LangChain | Ensemble logic, routing, and chain construction |
-| **LLM (Brain)** | Gemini 2.5 Flash | Blazing fast, highly factual response synthesis |
-| **Embeddings** | Gemini 2.0 Preview | 768-dimensional semantic text mapping |
-| **Permanent DB** | Pinecone Serverless | Hybrid (Dense + Sparse) cloud vector storage |
-| **Ephemeral DB** | Pinecone Namespaces | Stateless isolation for user uploads |
-| **Reranker** | Cohere v3.0 | Cross-encoder contextual compression |
-| **Observability** | LangSmith | Traces LLM calls for latency and cost analysis |
-| **Deployment** | AWS Lambda & GitHub Actions | Automated CI/CD pipeline targeting serverless AWS Lambda |
+5. **Serverless Infrastructure:**
+   - Packaged into a Docker container (`linux/amd64`) and deployed to AWS Lambda using Mangum (ASGI adapter) and Function URLs.
 
 ---
 
-## 📂 Project Structure
+## Tech Stack
+
+- **Backend:** Python 3.12, FastAPI, Mangum, SlowAPI
+- **LLM & Embeddings:** Google Gemini 2.5 Flash, Gemini 2.0 Embeddings
+- **Vector DB & Reranking:** Pinecone (Serverless), Cohere Rerank v3
+- **Orchestration:** LangChain
+- **Observability:** LangSmith
+- **DevOps / Infra:** Docker, AWS Lambda, AWS ECR, GitHub Actions (CI/CD)
+
+---
+
+## Project Structure
 
 ```text
-rag-portfolio-v2/
-├── .github/workflows/         # CI/CD Pipelines (deploy & test)
-├── static/                    # Frontend UI (index.html, style.css, script.js)
+adaptive-rag-engine/
+├── .github/workflows/
+│   ├── deploy.yml          # CI/CD: Builds Docker image, pushes to ECR, updates Lambda
+│   └── test.yml            # CI/CD: Runs pytest with mocked APIs
+├── static/                 # HTML/CSS/JS frontend
 ├── src/
-│   ├── agent.py               # Ensemble logic, Cohere filtering, & Gemini chains
-│   ├── vector_store.py        # Database routing & custom CloudSparseEncoder
-│   └── document_loaders.py    # Factory line for PDF, DOCX, and TXT chunking
-├── tests/                     # Pytest suite
-├── main.py                    # FastAPI server & SlowAPI Rate Limiting
-├── Dockerfile                 # Production Docker image configuration
-└── requirements.txt           # Production dependencies
+│   ├── agent.py            # LangChain chain logic, prompt templates, reranking
+│   ├── vector_store.py     # Pinecone connection setup and custom sparse encoder
+│   ├── document_loaders.py # PDF/DOCX/TXT file parsing & text splitting
+│   └── ingest.py           # Script to process & upload my project files to Pinecone
+├── tests/
+│   └── test_api.py         # Pytest suite (mocking Gemini & Pinecone calls)
+├── Dockerfile              # Production Docker image (AWS Lambda Python base)
+├── main.py                 # FastAPI endpoints & rate-limiting configuration
+└── requirements.txt        # Python dependencies
 ```
 
 ---
 
-## 🚀 Local Development
+## Running Locally
 
-1. **Clone & Environment:**
-   ```bash
-   git clone https://github.com/kalpit-22/rag-portfolio-v2.git
-   cd rag-portfolio-v2
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
-   ```
+### 1. Setup Environment
+```bash
+git clone https://github.com/kalpit-22/adaptive-rag-engine.git
+cd adaptive-rag-engine
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
 
-2. **API Keys:**
-   Copy `.env.example` to `.env` and fill in your Gemini, Cohere, Pinecone, and LangSmith keys.
+### 2. Configure Environment Variables
+Create a `.env` file in the root directory:
+```env
+GOOGLE_API_KEY=your_gemini_api_key
+COHERE_API_KEY=your_cohere_api_key
+PINECONE_API_KEY=your_pinecone_api_key
+LANGCHAIN_TRACING_V2=true
+LANGCHAIN_API_KEY=your_langsmith_api_key
+```
 
-3. **Run the API:**
-   ```bash
-   uvicorn main:app --reload
-   ```
-   *Navigate to `http://localhost:8000` to interact with the UI.*
+### 3. Ingest Portfolio Data (Optional)
+If you want to re-index the project files in `src/my_projects`:
+```bash
+python -m src.ingest
+```
 
-4. **Run Tests:**
-   ```bash
-   python -m pytest tests/ -v
-   ```
+### 4. Start the Local Server
+```bash
+uvicorn main:app --reload
+```
+Open `http://localhost:8000` in your browser.
+
+### 5. Run Tests
+```bash
+python -m pytest tests/ -v
+```
+
+---
+
+## CI/CD Pipeline
+
+Every push to `main` triggers a GitHub Actions workflow:
+1. **Test Phase:** Runs `pytest` with mocked LLM/Vector DB responses to verify endpoint logic.
+2. **Build Phase:** Builds the Docker container for `linux/amd64` (`--provenance=false`).
+3. **Deploy Phase:** Authenticates with AWS, pushes the image to Amazon ECR, and updates the AWS Lambda function code automatically.

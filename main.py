@@ -21,7 +21,7 @@ from src.agent import ask_portfolio
 
 load_dotenv()
 
-app = FastAPI(title="Pradhyumn's AI Portfolio API")
+app = FastAPI(title="Adaptive RAG Engine API")
 
 # Setup Rate Limiting for AWS Lambda
 def get_real_ip(request: Request) -> str:
