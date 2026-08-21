@@ -65,7 +65,7 @@ class ChatRequest(BaseModel):
 
 @app.post("/api/chat")
 @limiter.limit("20/minute")
-async def chat_endpoint(request: Request, body: ChatRequest):
+def chat_endpoint(request: Request, body: ChatRequest):
     try:
         # Convert pydantic models to dict format expected by ask_portfolio
         history_dicts = [{"role": msg.role, "content": msg.content} for msg in body.chat_history]
